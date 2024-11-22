@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: midoalzahbe
+      MONGO_INITDB_ROOT_PASSWORD: AkUT5yB2BIjAocuu
+      MONGO_INITDB_DATABASE: store
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-net
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./server/.env
+    volumes:
+      - ./server:/app/server
+    networks:
+      - app-net
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      MONGO_URL: ${MONGO_URL}
+      CLIENT_URL: http://localhost:5173 # Ensure frontend can be accessed by api
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - app-net
+    ports:
+      - 5173:5173
+    depends_on:
+      - api
+    environment:
+      VITE_API_BASE_URL: http://localhost:5000/api # Reference api container directly
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
