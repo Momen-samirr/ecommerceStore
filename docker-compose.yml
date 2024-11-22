@@ -3,12 +3,8 @@ version: "3.8"
 services:
   mongo:
     image: mongo:6.0
-    container_name: mongo
+    container_name: mongoDb
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: midoalzahbe
-      MONGO_INITDB_ROOT_PASSWORD: AkUT5yB2BIjAocuu
-      MONGO_INITDB_DATABASE: store
     ports:
       - "27017:27017"
     volumes:
@@ -20,6 +16,9 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    depends_on:
+      - mongo
+    container_name: node-api
     restart: unless-stopped
     env_file: ./server/.env
     volumes:
@@ -28,17 +27,14 @@ services:
       - app-net
     ports:
       - "5000:5000"
-    depends_on:
-      - mongo
-    environment:
-      NODE_ENV: production
-      MONGO_URL: ${MONGO_URL}
-      CLIENT_URL: http://localhost:5173 # Ensure frontend can be accessed by api
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    depends_on:
+      - api
+    container_name: react-ui
     restart: unless-stopped
     volumes:
       - ./frontend:/app
@@ -46,11 +42,7 @@ services:
     networks:
       - app-net
     ports:
-      - 5173:5173
-    depends_on:
-      - api
-    environment:
-      VITE_API_BASE_URL: http://localhost:5000/api # Reference api container directly
+      - "5173:5173"
 
 networks:
   app-net:
