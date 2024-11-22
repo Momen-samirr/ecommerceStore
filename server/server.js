@@ -10,8 +10,6 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-app.use(cors());
-
 const PORT = process.env.PORT;
 const __dirname = path.resolve();
 
@@ -32,8 +30,27 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/coupon", couponRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+app.use(cors());
+
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+  //health check
+  app.get("/", (req, res) => {
+    res.send("ok from mo2");
+  });
+
+  app.get("/api/auth/login", (req, res) => {
+    res.status(200).json({ message: "Test login route is working!" });
+  });
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
@@ -49,5 +66,3 @@ app.listen(PORT, (req, res) => {
   console.log(`listening on port ${PORT}`);
   connectDB();
 });
-
-// Bhkxd24GebWg8Zvy
