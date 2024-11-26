@@ -44,6 +44,16 @@ services:
     ports:
       - "5173:5173"
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: cAdvisor
+    ports:
+      - "8080:8080" # Change port to the default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+
 networks:
   app-net:
     driver: bridge
