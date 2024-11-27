@@ -57,6 +57,11 @@ app.get("/api/auth/login", (req, res) => {
   res.status(200).json({ message: "Test login route is working!" });
 });
 
+app.get("/metrics", (req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.send(client.register.metrics());
+});
+
 app.all("*", (req, res, next) => {
   next(new appError("invalid Url", httpStatus.FAIL, 500));
 });
